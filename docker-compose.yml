@@ -1,0 +1,63 @@
+version: '3'
+services:
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        container_name: laundry-react
+        ports:
+            - "3000:3000"
+        volumes:
+            - /app/frontend/node_modules
+            - ./frontend:/app/frontend
+        restart: unless-stopped
+        networks:
+            - jonysthil
+
+    backend:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+        container_name: laundry-node
+        ports:
+            - "8080:8080"
+        volumes:
+            - /app/backend/node_modules
+            - ./backend:/app/backend
+        restart: unless-stopped
+        networks:
+            - jonysthil
+
+    mysql:
+        image: mariadb:latest
+        container_name: laundry-mysql
+        restart: unless-stopped
+        environment:
+            MYSQL_ROOT_PASSWORD: password
+            MYSQL_ROOT_HOST: '%'
+        volumes:
+            - ./mysql:/var/lib/mysql
+        ports:
+            - 3306:3306
+        networks:
+            - jonysthil
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: laundry-phpmyadmin
+        restart: unless-stopped
+        ports:
+            - 81:80
+        environment:
+            PMA_HOST: mysql
+            PMA_USER: root
+            PMA_PASSWORD: password
+            UPLOAD_LIMIT: 80000000
+        depends_on:
+            - mysql
+        networks:
+            - jonysthil
+
+networks:
+    jonysthil:
+        driver: bridge
