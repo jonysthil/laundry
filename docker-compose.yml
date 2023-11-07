@@ -1,12 +1,13 @@
 version: '3'
 services:
     frontend:
+        env_file: ./.env
         build:
             context: ./frontend
             dockerfile: Dockerfile
         container_name: laundry-react
         ports:
-            - "3000:3000"
+            - $REACT_LOCAL_PORT:$REACT_DOCKER_PORT
         volumes:
             - /app/frontend/node_modules
             - ./frontend:/app/frontend
@@ -20,7 +21,7 @@ services:
             dockerfile: Dockerfile
         container_name: laundry-node
         ports:
-            - "8080:8080"
+            - $NODE_LOCAL_PORT:$NODE_DOCKER_PORT
         volumes:
             - /app/backend/node_modules
             - ./backend:/app/backend
@@ -30,15 +31,16 @@ services:
 
     mysql:
         image: mariadb:latest
+        env_file: ./.env
         container_name: laundry-mysql
         restart: unless-stopped
         environment:
-            MYSQL_ROOT_PASSWORD: password
+            MYSQL_ROOT_PASSWORD: $MYSQLDB_ROOT_PASSWORD
             MYSQL_ROOT_HOST: '%'
         volumes:
             - ./mysql:/var/lib/mysql
         ports:
-            - 3306:3306
+            - $MYSQLDB_LOCAL_PORT:$MYSQLDB_DOCKER_PORT
         networks:
             - jonysthil
 
@@ -47,11 +49,11 @@ services:
         container_name: laundry-phpmyadmin
         restart: unless-stopped
         ports:
-            - 81:80
+            - $PHPMYADMIN_LOCAL_PORT:$PHPMYADMIN_DOCKER_PORT
         environment:
-            PMA_HOST: mysql
-            PMA_USER: root
-            PMA_PASSWORD: password
+            PMA_HOST: $MYSQLDB_HOST
+            PMA_USER: $MYSQLDB_USER
+            PMA_PASSWORD: $MYSQLDB_ROOT_PASSWORD
             UPLOAD_LIMIT: 80000000
         depends_on:
             - mysql
